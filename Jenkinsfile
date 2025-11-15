@@ -119,22 +119,24 @@ pipeline {
             steps {
                 script {
                     def appContainer
-                    def targetUrl = "http://172.17.0.1:1234"   // FIX FOR LINUX HOST
+                    def targetUrl = "http://172.17.0.1:1234/"
 
                     try {
-                        echo "Starting application container on host port 1234..."
+                        echo "Starting application container..."
                         appContainer = sh(
                                 returnStdout: true,
                                 script: "docker run -d -p 1234:8080 alimsahlibw/devops:latest"
                         ).trim()
 
                         echo "Waiting for application to become ready..."
-                        retry(5) {
+                        retry(10) {
                             sleep 5
                             sh "curl -s -o /dev/null ${targetUrl}"
                         }
 
-                        echo "App ready. Running ZAP Baseline scan..."
+                        sleep 5  // extra warm-up time for PetClinic
+
+                        echo "App ready. Launching OWASP ZAP scan..."
 
                         sh """
                     docker run --rm \
@@ -152,7 +154,7 @@ pipeline {
                         echo "🚨 ZAP Stage Error: ${e.getMessage()}"
                     } finally {
                         if (appContainer) {
-                            echo "Cleaning up app container…"
+                            echo "Cleaning up container..."
                             sh "docker stop ${appContainer}"
                             sh "docker rm ${appContainer}"
                         }
@@ -160,8 +162,6 @@ pipeline {
                 }
             }
         }
-
-
     }
     post {
         always {
