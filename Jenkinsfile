@@ -1,10 +1,17 @@
 pipeline {
+    // Default agent is set to 'any'
     agent any
 
     stages {
 
-
         stage('MAVEN Build & Test'){
+            // FIX: Use a Docker agent with a modern Java version (e.g., Java 21)
+            // Replace '21' with '25' when a Maven image with Java 25 is available.
+            agent {
+                docker {
+                    image 'maven:3.9.6-eclipse-temurin-21'
+                }
+            }
             steps {
                 sh 'mvn clean install'
             }
@@ -15,6 +22,7 @@ pipeline {
                 sh 'docker run --rm -v $WORKSPACE:/app -w /app zricethezav/gitleaks:latest detect --source=. --report-path=gitleaks-report.json --exit-code 0'
             }
         }
+
         stage('Security Check: Forbidden .env File') {
             steps {
                 script {
