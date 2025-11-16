@@ -5,13 +5,6 @@ pipeline {
     stages {
 
         stage('MAVEN Build & Test'){
-            // FIX: Use a Docker agent with a modern Java version (e.g., Java 21)
-            // Replace '21' with '25' when a Maven image with Java 25 is available.
-            agent {
-                docker {
-                    image 'maven:3.9.6-eclipse-temurin-21'
-                }
-            }
             steps {
                 sh 'mvn clean install'
             }
