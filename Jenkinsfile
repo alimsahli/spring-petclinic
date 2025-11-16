@@ -1,5 +1,5 @@
 pipeline {
-    // Default agent is set to 'any'
+    
     agent any
 
     stages {
